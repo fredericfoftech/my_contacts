@@ -32,7 +32,7 @@
 <script setup lang="ts">
 
 
-import { ref } from 'vue';
+import { ref , onMounted} from 'vue';
 import { useRouter } from 'vue-router';
 import { useAccount } from '@/stores/api';
 
@@ -44,6 +44,15 @@ const password = ref('');
 const loading = ref(true);
 const error = ref('');
 
+onMounted(() => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    router.push('/profil');
+  } else {
+    loading.value = false;
+  }
+});
+
 const userLogin = async () => {
   if (!email.value || !password.value) {
     alert('Veuillez remplir tous les champs');
@@ -51,9 +60,13 @@ const userLogin = async () => {
   }
   loading.value = true;
   error.value = '';
+
+
   try {
-    await store.login(email.value, password.value);
-    router.push('/profil');
+     const response =  await store.login(email.value, password.value);
+     const token = response.token;
+      localStorage.setItem('token', token); 
+ router.push('/profil');
   } catch (err) {
     alert('Une erreur est survenue');
   } finally {
